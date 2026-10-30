@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bablu Kumar | UPI Payment</title>
+  <meta name="theme-color" content="#1456c0">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f2f6fc;color:#17243a}
+    .top{background:linear-gradient(135deg,#1249a5,#2879e8);color:#fff;padding:30px 18px 58px;text-align:center}
+    .top h1{margin:0 0 8px;font-size:27px}.top p{margin:0;opacity:.92}
+    .card{max-width:440px;margin:-35px auto 30px;background:#fff;border-radius:18px;padding:24px 20px;box-shadow:0 12px 35px #173c7020}
+    label{display:block;font-weight:700;margin:14px 0 8px}
+    input{width:100%;padding:15px;border:1px solid #cbd7e8;border-radius:10px;font-size:18px;outline:none}
+    input:focus{border-color:#2879e8}
+    button,.paylink{display:block;width:100%;border:0;border-radius:10px;padding:15px;background:#1764d8;color:#fff;font-weight:700;font-size:16px;text-align:center;text-decoration:none;margin-top:15px;cursor:pointer}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .secondary{background:#eaf2ff;color:#1456c0}
+    .upi{text-align:center;color:#52627a;font-size:14px;margin:17px 0 5px}
+    #qrWrap{display:none;text-align:center;margin:20px auto 8px;padding:15px;border:1px dashed #b8c9e2;border-radius:12px}
+    #qrcode{display:flex;justify-content:center;margin:12px auto}
+    #qrWrap p{font-size:13px;color:#52627a}
+    .note{font-size:12px;line-height:1.5;color:#64748b;background:#f5f8fd;padding:12px;border-radius:9px;margin-top:18px}
+    .status{font-size:13px;color:#52627a;text-align:center;margin-top:12px;min-height:18px}
+    footer{text-align:center;font-size:12px;color:#7b8798;padding:0 15px 25px}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>Bablu Kumar</h1>
+    <p>Secure UPI Payment</p>
+  </header>
+
+  <main class="card">
+    <label for="amount">Enter Payment Amount (₹)</label>
+    <input id="amount" type="number" min="1" step="0.01" placeholder="e.g. 500">
+    <button id="makeQr" type="button">Generate QR Code</button>
+    <a id="payNow" class="paylink" href="#" style="display:none">Pay Now with UPI App</a>
+    <div class="upi">UPI ID: <strong>Demogh@ybl</strong></div>
+
+    <section id="qrWrap">
+      <strong>Scan using PhonePe, Google Pay or another UPI app</strong>
+      <div id="qrcode"></div>
+      <p>Check the recipient name and amount in your UPI app before paying.</p>
+    </section>
+
+    <div class="note">
+      Important: This page only creates a UPI payment request/QR. It cannot confirm whether money was received. Verify the credit in your own bank/UPI app before supplying goods or marking an order as paid. Never trust a payment screenshot alone.
+    </div>
+    <div class="status" id="status" aria-live="polite"></div>
+  </main>
+  <footer>UPI payments are processed by your UPI app and bank.</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const upiId = "Demogh@ybl";
+    const payeeName = "Bablu Kumar";
+    const amountInput = document.getElementById("amount");
+    const qrWrap = document.getElementById("qrWrap");
+    const qrBox = document.getElementById("qrcode");
+    const payNow = document.getElementById("payNow");
+    const statusBox = document.getElementById("status");
+
+    function makePaymentLink(amount) {
+      const params = new URLSearchParams({
+        pa: upiId, pn: payeeName, am: amount.toFixed(2), cu: "INR"
+      });
+      return "upi://pay?" + params.toString();
+    }
+
+    document.getElementById("makeQr").addEventListener("click", () => {
+      const amount = Number(amountInput.value);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        statusBox.textContent = "Please enter a valid amount greater than zero.";
+        qrWrap.style.display = "none";
+        payNow.style.display = "none";
+        return;
+      }
+      const link = makePaymentLink(amount);
+      qrBox.innerHTML = "";
+      if (typeof QRCode === "undefined") {
+        statusBox.textContent = "QR library could not load. Check your internet connection and refresh.";
+        return;
+      }
+      new QRCode(qrBox, {text: link, width: 210, height: 210, correctLevel: QRCode.CorrectLevel.M});
+      qrWrap.style.display = "block";
+      payNow.href = link;
+      payNow.style.display = "block";
+      statusBox.textContent = "Payment request ready. Confirm the payee and amount in your UPI app.";
+    });
+  </script>
+</body>
+</html>
